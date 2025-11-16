@@ -6,10 +6,16 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
+export enum ProjectStatus {
+  OPEN = 'open',
+  IN_PROGRESS = 'in_progress',
+  COMPLETED = 'completed',
+}
+
 @Entity('projects')
 export class Project {
-  @PrimaryGeneratedColumn()
-  id: number;
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
 
   @Column({ type: 'varchar', length: 255 })
   title: string;
@@ -20,11 +26,15 @@ export class Project {
   @Column({ type: 'decimal', nullable: true })
   budget: number;
 
-  @Column({ type: 'boolean', default: false })
-  isCompleted: boolean;
+  @Column({
+    type: 'enum',
+    enum: ProjectStatus,
+    default: ProjectStatus.OPEN,
+  })
+  status: ProjectStatus;
 
-  @Column({ type: 'int' })
-  ownerId: number;
+  @Column({ type: 'uuid' })
+  ownerId: string;
 
   @CreateDateColumn()
   createdAt: Date;
