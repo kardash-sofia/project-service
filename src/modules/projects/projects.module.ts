@@ -6,6 +6,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { Project } from 'src/entities/project.entity';
 import { ProjectService } from './projects.service';
 import { ProjectController } from './projects.controller';
+import { AmqpConsumerService } from './amqp-consumer.service';
 
 @Module({
   imports: [
@@ -28,6 +29,6 @@ import { ProjectController } from './projects.controller';
     ]),
   ],
   controllers: [ProjectController],
-  providers: [ProjectService],
+  providers: [ProjectService, AmqpConsumerService],
 })
 export class ProjectModule {}

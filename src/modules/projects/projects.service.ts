@@ -18,6 +18,31 @@ export class ProjectService {
     private client: ClientProxy,
   ) {}
 
+  async getProjects({ page = 1, limit = 10 }) {
+    const [projects, total] = await this.projectRepo.findAndCount({
+      skip: (page - 1) * limit,
+      take: limit,
+      order: { createdAt: 'DESC' },
+    });
+
+    return {
+      items: projects,
+      total,
+    };
+  }
+
+  async handleProjectCreatedEvent(dto: CreateProjectDto) {
+    console.log('[SERVICE] Handling AMQP event:', dto);
+
+    const project = this.projectRepo.create(dto);
+    return this.projectRepo.save(project);
+  }
+
+  sendToQueue(dto: CreateProjectDto) {
+    console.log('[SERVICE] Sending to AMQP queue:', dto);
+    this.client.emit('project_created', dto);
+  }
+
   async createProject(dto: CreateProjectDto) {
     const userServiceUrl = this.configService.get<string>('USER_SERVICE_URL');
 
@@ -30,14 +55,7 @@ export class ProjectService {
     }
 
     const project = this.projectRepo.create(dto);
-
     const savedProject = await this.projectRepo.save(project);
-
-    this.client.emit('PROJECT_CREATED', {
-      projectId: savedProject.id,
-      clientId: dto.ownerId,
-      title: savedProject.title,
-    });
 
     return savedProject;
   }
